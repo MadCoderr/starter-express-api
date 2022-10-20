@@ -1,16 +1,31 @@
-const express = require("express");
+import { AUTH, DB } from "./firebase.js";
+import express, { json } from "express";
+
 const app = express();
 
-app.use(express.json());
+app.use(json());
 
 app.get("/", (req, res) => {
-  res.send("Yo!");
+  res.send("Atlas Training Platform server");
 });
 
-app.post("/create-user", (req, res) => {
-  const { username, email } = req.body;
+// check user role
+app.post("/check-user-role", async (req, res) => {
+  try {
+    const { email, role } = req.body;
 
-  res.status(200).json({ username, email });
+    const user = await AUTH.getUserByEmail(email);
+
+    if (user.customClaims?.role === role) {
+      res.status(200);
+      res.json(true);
+    } else {
+      res.status(200);
+      res.json(false);
+    }
+  } catch (e) {
+    throw new Error(e.message);
+  }
 });
 
 const PORT = process.env.PORT || 4000;
